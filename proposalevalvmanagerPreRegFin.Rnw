@@ -1,0 +1,251 @@
+%\documentclass[man,floatsintext,mask,hidelinks]{apa7}
+\documentclass[doc,floatsintext,hidelinks]{apa7}
+\usepackage{enumitem}  % for noitemsep
+\usepackage[natbibapa]{apacite}
+\bibliographystyle{apacite}
+\usepackage{setspace}
+\usepackage{amsmath}
+\usepackage{comment}
+\title{How is the memory conformity effect influenced \\ \vspace{.2em} by the relative power of the individuals involved?}
+\shorttitle{Power and Learning from Others}
+\authorsnames{Daniel B. Wright, Vuk Celic}
+\authorsaffiliations{{Educational Psychology, Higher Education, and Leadership \\ University of Nevada, Las Vegas}}
+\authornote{Contact email: dbrookwr@gmail.com or dwright@unlv.edu. \\ This document is available from the authors as a \textbf{knitr} \citep{knitr} to allow others to re-create it. This will be done also with the Stage 2 report. \citet{Mair2016} argues that this is important when one considers the reproducibility of results.}
+\abstract{When people remember together, what one person says can affect what others report. The size of this effect is dependent on characteristics of the people and how they express their beliefs. The power relationship among people affects much of their social cognition, including the size of this \emph{memory conformity} effect. However, some research has shown people conform more to high power individuals and some research shows the opposite. The proposed research identified what we believe is an important difference in these studies in the type of power that was manipulated: evaluation versus managerial power. The proposed research will examine these using a $2 \times 2$ factorial design, plus a control group. The study is designed to be like how people learn new vocabulary in an education context.}
+
+\begin{document}
+\maketitle
+
+
+People's memories are influenced by what other people say \citep[e.g.,][]{MaswoodRajaram2019}. This has been called memory conformity \citep{WrightEA2000mc}, the social contagion of memory \citep{RoedigerEA2001}, and learning from others \citep{Wright2016LFO}. The influence of what other people say on a person's memory report is part of the larger research area on the malleability of human memory \citep[e.g.,][]{Loftus2005}. Much of this work has been applied to the unreliability of witnesses in criminal cases \citep[e.g.,][]{HopeGabbert2019,LoftusKetcham1992,WrightEA2009talk}. \citet{SkagerbergWright2008survey} showed how important this is for witness testimony as about 90\% of witnesses they interview at police stations said their were co-witness and most of them spoke with these other witnesses. 
+
+In education students often talk with others about the material they are supposed to learn. This is the applied area of our interests: how students can learn accurate and inaccurate information from others. Our design reflects this interest. Suppose a teacher named Peter and a student named Grace are discussing environmental science. Peter says fluorinated gases can trap thousands of times more heat than carbon dioxide. How does Peter saying this affect Grace's beliefs? What if Grace is the teacher and Peter is the student? 
+
+Researchers have examined how different characteristic about the communicators and how they are communicating affects how likely it is that each of them are affected by what the other person says. For example, if it is believed one of them had longer to learn the information, they are more likely to influence the other person \citep[e.g.,][]{GabbertEA2007}. The person who brings the information up first in the discussion is also more likely to influence the other person \citep[e.g.,][]{WrightCarlucci2011}. Several other individual differences and situational characteristics have been explored in this area. The proposed research focuses on how the relative power of the two people affects memory conformity. Power plays an important role in the social cognitive processes involved when people interact \citep{Guinote2015}.
+
+The impetus for this research is two studies that examined the power relationship between the two people and produced seemingly contradictory results with respect to whether the low or the high power person was more influenced \citep{CarolEA2013,SkagerbergWright2008power}. There are several differences between the designs of the two studies. Here we focus on one aspect that has important applied consequences. Consider the power relationship between Peter and Grace. Peter being a teacher has some evaluation power and some managerial power. There is also a likely difference in knowledge about the content area. Several studies have shown greater knowledge about the content area leads to a person being more influential and less knowledge about the area leads to the person conforming more \citep[e.g.,][]{GabbertEA2007,WilliamsonEA2013}. Our focus is on the evaluation and managerial aspects of power and if they lead to different patterns of memory conformity.
+
+\subsection{The two previous power/memory conformity studies}
+Consider these two studies in more detail. \citet{SkagerbergWright2008power} randomly allocated their UK participants into three conditions: one individual control condition and a low and a high power condition. Those in the control condition showed up individually, saw 50 photographs of White males, and then were given an old/new recognition test with the 50 previously shown faces (old) and 50 new faces and asked which were previously shown. Participants in the low power and high power conditions arrived together. Those in the low power condition had to design a restaurant \citep[power manipulation task based on][]{GuinoteEA2002} and those in the high power condition believed that they were to \emph{evaluate} the design on several attributes. This is similar to what occurs in some project based education modules where the teacher rates the student's work. The student is to be creative and the assessor should reward creativity. As a pair they were then given the old/new recognition test. During the memory task the two people would respond sequentially in a manner that the second person could see what the first person wrote. Half the time the person in the low power condition responded first and half the time the person in the high power condition responded first. Skagerberg and Wright knew that what the first person says would likely influence what the second person says (i.e., the basic memory conformity effect). They were interested whether the low power person or the high power person conformed with the other person more. They found that the low power person conformed \emph{more} than the high power person.
+
+\citet{CarolEA2013} used a different power manipulation based on \citet{AndersonBerdahl2002}. They told pairs of US participants that they were to build a realistic looking vehicle using K'NEX (similar to Lego). One person would supervise the task (high power) and tell the other person (low power) what to do. This is similar to the power situation that might occur in many work-place settings and involves \emph{managerial} power. The manager is to be creative and the employee is to simply follow commands. There were two other differences between Skagerberg's and Carol's studies. \citeauthor{CarolEA2013} had participants write down how they felt about being assigned to either the high or low power conditions. This serves to make the power position more salient. Second, one of the people in each pair in \citeauthor{CarolEA2013} was actually a confederate, who would always respond first in the test. Their test had a similar format to \citet{SkagerbergWright2008power}, but their findings were different. They found that the low power person conformed \emph{less} than the high power person.
+
+While there are several differences between these two studies, the one that is most salient is the power manipulations were designed to affect different kinds of power. The discrepancy between the results suggests that how power is manipulated may be important for whether the high or low power role is more influential in memory conformity effects. Therefore, in this study we vary whether the power is evaluative power, as in \citet{SkagerbergWright2008power}, or managerial power, as in \citet{CarolEA2013}. It is worth noting that low power person in the evaluative study and the high power person in the managerial power study were the ones who would be required to do the more creative task. The participants do not actually do these tasks, but following Carol \emph{et al.}'s design we have them write about how they feel being in the high or low power role. We also follow their design and use a confederate. Unlike both of those studies the proposed study will be conducted online. This allows greater control and a large enough sample to meet the guidelines from a power analysis (see below).
+
+\subsection{Individual Differences}
+Some studies have looked naturally occurring dyads where there is an unbalanced power structure. For example, \citet{SkagerbergWright2009siblings} looked at siblings. Research \citep[e.g.,][]{WhitemanChristiansen2008} suggests the older sibling should be able to influence the younger sibling more than the other way around. \citet{SkagerbergWright2009siblings} found no significant differences based on birth order. It is likely that if power differentials exist by birth order they are small compared with the context differentials produced by the specific tasks we use. Further, sibling birth order differentials may be small compared with other individual differences. 
+
+Several papers have explored individual differences in memory malleability \citep[e.g., see papers in][]{ReadWinograd1998}. Identifying individual differences in the extent that people's memories can be influenced by others is important, particularly with an increased focus on mis- and dis-information on social media. If an individual difference measure accounts for some of the memory conformity effect, this can increase the power comparisons by our manipulation. A recent measure is of particular interest. Recently \citet{NashEA2023} developed the 20-item Memory Distrust Scale (MDS) that appears a promising method for exploring individual differences in memory conformity. They focus on a one-factor solution, but note that a scree plot shows that a two-factor model may also fit. The four items (\#11, \#13, \#14, \#15) that load on the second factor after rotation are ``all of which were related to memory distrust relative to other people'' (p.~5). This suggests that the second factor may be predictive of memory conformity. As this is a new scale, we examine the results for this scale in two steps. First we compare the fit of the one-factor and two-correlated-factor models. Second, depending on the results, we use the resulting factor(s) to predict memory and memory conformity. 
+
+In summary, given the different findings from \citet{SkagerbergWright2008power} and \citet{CarolEA2013}, we predict that memory conformity will be higher for people in the low condition when being assessed but lower for people in the high condition in the manager task. It is important to note that these lower scores coincide with those who, if there were a task, would be required to do more creative work. This anticipated cognitive strain may affect how much they are affected by the other person's memory report.
+
+\section{Methods}
+\subsection{Overview}
+
+Participants are recruited by Prolific, and go to an online study in Qualtrics. They are shown forty-eight word and non-word pairs to remember, and then are randomly assigned to one of five groups that vary in their power roles and how power is manipulated. They are told they are matched with another participant to take a social recognition memory test of these pairs, although this is actually the computer providing 50\% accurate responses. The computer responds first, and then the participant. This allows us to estimate both the participant's memory and their memory conformity (see proposed analysis section). They then fill out the Memory Distrust Scale, are debriefed, and return to the Prolific site for payment.
+
+\subsection{Design}
+The design is a $2 \times 2$ plus a control condition design. The $2 \times 2$ refers to participants being randomly allocated, using Qualtrics' randomization, to a low or high power condition, and whether the power manipulation involves evaluation or management. A control group will also be included. Participants will be told that they have been paired up with another person (although it is a computer confederate). The labels we use for the conditions are:
+
+\begin{center}
+\begin{tabular}{lll}
+Short Label & Label & Description \\ \hline
+Control & Control & No power role tasks \\
+LE & Power\textsubscript{Low}Type\textsubscript{eval} & Low power evaluation (student) \\
+LM & Power\textsubscript{Low}Type\textsubscript{manage} &  Low power manage (employee) \\
+HE & Power\textsubscript{High}Type\textsubscript{eval} &  High power evaluation (teacher) \\
+HM & Power\textsubscript{High}Type\textsubscript{manage} &  High power manage (manager) \\ \hline
+\end{tabular}
+\end{center}
+
+
+The main outcome variable is the amount of conformity. The method often used to measure the impact of what one person says on another (i.e., memory conformity) involves the pair answering items on a test sequentially, in a manner that the second person responding can see/hear the first person's response \citep[e.g.,][]{SchneiderWatkins1996}. We also had a confidence measure using a 50\%-100\% scale where 50\% is for guessing. This allows a more fine-grained analysis of the impact of both accurate and inaccurate information. 
+
+
+\subsection{Sample}
+The sample will be drawn using Prolific \citep{PalanSchitter2018}. Prolific is a system that recruits participants on the web and has been shown to produce high quality data, particularly in comparison with MTurk \citep{PeerEA2022}. People will be excluded if they use a duplicate IP address (the second will be deleted), fail an in-built Qualtrics Captcha question, or respond more quickly, on average, than 2 seconds per question on the Memory Distrust Scale \citep{NashEA2023}. Responding faster than 2s per question on scale questions suggests that the items are not being read. This might mean excluding 10-20\% for data quality issues. We plan to ask 20\% more people than the power analysis suggests because of this. 
+
+Our primary focus is whether the amount of conformity varies by experimental condition. How conformity can be measured is described in the \emph{Proposed Analysis} section. The power analysis is based on using an ANOVA with the estimates for memory conformity as the response variable. How these are estimated is described below. We will use two-tailed $p$-values throughout this paper and treat $p < 5\%$ as significant. 
+
+A key hypothesis is to detect a non-zero interaction between type of power (evaluation and managerial) and whether the manipulation is high or low. This is an interaction for the $2 \times 2$ comparison. Given the different directions of the \citet{SkagerbergWright2008power} and \citet{CarolEA2013} results, we predict there may be a cross-over interaction with the low power person having a higher conformity score in the evaluation condition, but a lower conformity score in the managerial condition. Following the procedures in \url{http://daniellakens.blogspot.com/2020/03/effect-sizes-and-power-for-interactions.html}, we use \textbf{Superpower} \citep{Superpower} to estimate the sample size needed to detect this interaction with 95\% power if each power difference (high $v$ low) is what \citet{Cohen1988} calls a medium effect (i.e., $d = 0.5$, difference = $\sigma / 2$). This suggests $n = 53$ per condition. Including the extra 20\% and rounding up, this is 63 per condition or 315 in total. The code and output is:
+
+\begin{minipage}{\linewidth}
+\singlespacing
+<<powercalcs1,message=FALSE,warning=FALSE>>=
+library(Superpower)
+design <- ANOVA_design(design = "2b*2b", n = 53,  # per condition
+  mu = c(1,0,0,1),sd=2,plot=FALSE)
+ANOVA_exact(design,alpha_level=.05,verbose=FALSE)$main_results[3,]
+@
+\end{minipage}
+
+We record gender, age, and ethnicity. Gender we expected to have approximately 50\% males and females. We use Prolific for sampling participants and are aware that their samples tend to be young adults. While there are interesting age differences in many social memory contexts \citep[e.g.,][]{MeadeEA2020}, our sample is unlikely to have sufficient spread to examine this. We will also ask participants their ethnicity and race, and based on past studies with Prolific we expect the majority to be White and the spread insufficient to detect differences. We include these in our study so that they are available for future systemic reviews/meta-analyses.
+
+
+\subsection{Procedure \& Materials}
+The recruitment and payment for participants will be coordinated through Prolific. Prolific will direct participants to Qualtrics, where the study will be housed. Participants will be told that they will be interacting with another person doing multiple tasks: a learning study and designing a house plan. The "other person" will in fact be responses from the computer. The participant will first take part in the learning phase. They are shown a set of 48 word pairs where the first word is a concrete noun and the second a pronounceable nonsense ``English'' word. Using the ARC nonword database \citep{RastleEA2002}, 96 nonwords were sampled to use in the study and these are shown in the appendix. These make up the two response alternatives (one being accurate) for each of the 48 items. Forty-eight concrete nouns were randomly sampled from nouns found at \url{https://helpingwithwriting.com/Lists/Concrete-Nouns.htm}. These are also shown in the appendix. An example for the learning phase is:
+
+
+<<warning=FALSE,echo=FALSE,size="footnotesize">>=
+options(width = 90)
+firstup <- function(x) {
+  substr(x, 1, 1) <- toupper(substr(x, 1, 1))
+  x
+}
+csvfile <- "C:\\Users\\wrighd12\\Documents\\Vuk\\nonwords.csv"
+nonwords <- firstup(read.csv(csvfile,sep=" ")[1:96,1])
+@
+
+
+<<size="footnotesize",echo=FALSE>>=
+cwfile <- "C:\\Users\\wrighd12\\Documents\\Vuk\\concrete100.csv"
+concrete <- read.csv(cwfile)
+concrete <- c(concrete[,1],concrete[,2])
+set.seed(31947)
+concrete <- concrete[sample(1:98,48)]
+@
+
+
+\begin{center}
+\emph{\Sexpr{concrete[33]}} -- \emph{\Sexpr{nonwords[33]}}
+\end{center}
+
+\noindent These will be shown, in sequence, for four seconds with one second between presentations. This will take four minutes. The order of presentation in the learning and testing will be random, but will be the same for all participants to remove this source of variation when comparing participants. 
+
+Next, participants are randomly allocated to one of the five between-subject conditions. All are told:
+
+\begin{quote}
+You will be taking part in two tasks: a memory task conducted in pairs for the words that you were just shown and a task that involves designing a kitchen. In order to take part in the memory task there may be a couple of minutes delay to make sure that the other person is ready so you will be asked to reflect on the designing the kitchen task. This will be done after the memory task is completed.
+\end{quote}
+
+\noindent Then the remaining instructions differ for the five groups:
+
+\begin{description}[noitemsep]
+\item{Control} \\ The ``designing a kitchen task'' will require you to decide what to include in a kitchen and where to place all of these. You will be given a list of items and will place these in position. 
+In the space below please write how you feel about this task. You need to write at least ten words for your answer to be acceptable. 
+
+\item{LE} \\
+The ``designing a kitchen task''  will be done with your partner. 
+You will decide what to include in a kitchen and where to place all the items. 
+You will tell your partner your plan. 
+Your partner will evaluate you on your plan. 
+In the space below please write how you feel about this task and your role. You need to write at least ten words for your answer to be acceptable.
+\item{LM} \\  
+The ``designing a kitchen task'' will be done with your partner. 
+Your partner will decide what to include in the kitchen and where to place these items. 
+They will tell you their plan. 
+You are responsible for executing their plan. 
+In the space below please write how you feel about this task and your role. You need to write at least ten words for your answer to be acceptable.
+\item{HE} \\ 
+The ``designing a kitchen task''  will be done with your partner. 
+Your partner will design what to include in the kitchen and where to place these items. 
+They will tell you their plan. 
+You will evaluate your partner's performance. 
+In the space below please write how you feel about this task and your role. You need to write at least ten words for your answer to be acceptable. 
+\item{HM} \\ 
+The ``designing a kitchen task''  will be done with your partner. 
+You will decide what to include in a kitchen and where to place all of the items. 
+You will tell your partner your plan.
+They are responsible for executing your plan. 
+In the space below please write how you feel about this task and your role. You need to write at least ten words for your answer to be acceptable.
+\end{description}
+
+\noindent It is important to note the similarity between LE and HM, where the participant decides what to include, and between LM and HE, when the other person decides what to include. Our hypothesis is consistent with the person not tasked with making any creative decisions having higher memory conformity scores. The minimum word count is done to prevent very brief responses that might not allow participants to think about this role. How to program this into Qualtrics is described at \url{https://community.qualtrics.com/XMcommunity/discussion/17152/how-do-i-validate-a-text-response-question-by-word-count-not-character-count}.
+
+
+\citet{Ozturk2007} describes different ways to assess vocabulary learning. Simple recognition formats tap superficial knowledge of the learned language, which is appropriate when people have just learned the information. This is used here. The testing will be two item multiple choice questions (MCQs) that include the accurate response. For example:
+
+\noindent \emph{\Sexpr{concrete[33]}}
+\begin{enumerate}[nosep,label=(\Alph*)]
+\item \emph{\Sexpr{nonwords[32]}}
+\item \emph{\Sexpr{nonwords[33]}}
+\end{enumerate}
+
+\noindent It will be explained that the other person has been randomly chosen to respond first.  They are told that both people see each other's responses, but then each estimates the probability that their own response was correct on a 50\% (guessing) to 100\% (certain) scale. The other person responds correctly on half of trials (24 of the 48). After the test is complete, the participants complete the Memory Distrust Scale \citep{NashEA2023}. Demographics (gender, ethnicity, age) are also recorded. Participants are then debriefed. 
+
+
+\noindent In total the study should take approximately 25 minutes and participants will be paid \$5 to complete it.
+
+\section{Proposed Analysis of Results}
+Analyzing data from a social recognition memory test can be done in several ways \citep[e.g.,][]{WrightEA2005socrec}. The \textsf{R} package \textbf{lme4} \citep{lme4} will be used to estimate values for each person for accuracy and conformity. Multilevel logistic regression is often used when the outcome variable is binary (e.g., right/wrong, old/new). For binary outcome a multilevel logistic regression of the form:
+\begin{equation}
+\mathit{logit} \; \mathit{Pr}(\mathit{right}_{ij}) = (\beta_0 + u_j) + (\beta_1 + v_j) \mathit{other}_{ij} 
+\end{equation}
+\noindent where $j$ is the index for participants and $i$ for items, will be estimated. $u_j$ and $v_j$ measure variation by participant around the intercept (accuracy) and around the effect of what the other person says (conformity). Sometimes random variables associated with the items are also included. Conditional modes for $u_j$ and $v_j$ can be estimated with \textbf{lme4} using the \texttt{ranef} function. These estimate memory and memory conformity for each participant. To repeat:
+
+
+%file:///C:/Users/wrighd12/Downloads/TwotalesofmemorydistrustinChina_accepted_jarmac_zhang_qi_otgaar_nash_jelicic.pdf finds the two factor too
+
+\begin{framed}
+\noindent The conditional modes for the intercept and slope from the multilevel logistic regression are used to estimate memory and memory conformity for each participant.
+\end{framed}
+
+Item analyses will be exploratory. Including these in the model could create convergence issues so random effects by items will not be used. 
+
+In addition, the current study includes a measure for the belief accuracy. Participants respond to a 50 point scale from guessing to certainty for each item. The relationship between confidence and accuracy can be examined in many ways. The confidence measure will be used within the multilevel logistic regression to examine the relationship between confidence and accuracy, and if it related to condition and memory conformity. We will examine QQ-normal plots for confidence to judge how close it is to the normal distribution. Assuming it is not normally distributed, the normrank transformation will be used.\footnote{This involves ranking the data and using the inverse normal ($\Phi^{-1}$) function:
+\begin{equation} \label{eqn:rankdelta}
+\mathit{new\;X_i} = \Phi^{-1} \frac{\mathit{rank}(x) - \delta}{n - 2 \, \delta + 1} 
+\end{equation}
+\noindent where we will use $\delta = .7$, which has been shown to have good properties \citep{Wright2024normrank}.} We will also examine if confidence is affected by the experimental manipulations. 
+
+The main analysis will be the $2 \times 2$ ANOVA with the dependent variable being the conditional modes used to estimate memory conformity. The focus is on the interaction. This will include the effect size measure $\omega_p^2$ and its confidence interval \citep{Hays1981}. A plot of group means and their 95\% confidence intervals will be shown, including the control group. Pairwise comparisons will be made reporting $p$-values  adjusted using Holm's (\citeyear{Holm1979}) procedure for the comparisons with the control group. Cohen's $d$s and their confidence intervals will be reported for these comparisons. Analysis will be done to examine if the experimental conditions influence accuracy using these same statistical procedures. 
+
+These analyses can be done directly using multilevel modeling rather than using it just to create the conditional modes and then using traditional methods on these estimates. These should lead to similar conclusions and the multilevel analyses will be reported in an Appendix of the Stage 2 manuscript. Because complex multilevel models sometimes fail to converge, here in the Stage 1 manuscript we state we will use the less computationally demanding approach.
+
+The psychometric properties for this sample for the Memory Distrust Scale \citep{NashEA2023} will be analyzed. The dimensionality of the data for this sample will be examined. There is much discussion about choosing the number of dimensions to treat a scale \citep[e.g.,][]{AuerswaldMoshagen2019,VelicerEA2000}. The empirical Kaiser criterion, which compares the observed eigenvalues of the correlation with those produced from a random matrix and is implemented with \texttt{DIMTEST} function from \textbf{EFA.dimensions} \citep{EFA.dimensions}, will be used and the results compared with \citet{NashEA2023}. We anticipate these will suggest one or two dimensions.
+
+\citet{NashEA2023} report that either a one- or two-factor model may be appropriate. We will use confirmatory factor models to compare these. One factor would be items 11, 13, 14, and 15, and the second factor the remaining items. We would assume these factors are correlated. We will report the correlations among accuracy, conformity, and memory distrust (both single factor, and the two factor solutions). We will examine if the distrust scores appear influenced by the experimental conditions using ANOVA. The distrust score can be used as a covariate to improve power depending on how it is (or its components are) correlated with the other variables. These will be reported, but following \citet{Spiegelhalter2017trust} the resulting $p$ values will be labelled $p_\mathit{exp}$ to denote that these are exploratory procedures.  
+
+There is the possibility that the experimental conditions affect memory distrust scores appreciably. We do not predict this, but do examine and report these affects using ANOVAs as above. 
+
+The final set of analyses relate to what the participants write when describing how they feel about the task. This difficulty with online tasks is that people often write very little and sometimes what is written is off-topic. Because of this, we will first examine the data and if more than $1/3$ appear off-topic (e.g., talking about using Prolific rather than the kitchen design task) we will not continue with these analyses. If two-thirds or more are on-topic, there are fairly standard protocols for preparing text data, for example removing punctuation and stop words (e.g., \emph{the}) and transforming words into stems such that \emph{drove cars} becomes \emph{drive car}. Extremely high and low frequency words are also removed \citep[for an introduction see][]{GrimmerEA2022}.  and details for running analyses are in many sources specific to the packages that will be used \citep[e.g.,][]{quanteda}. We will find the most used words specific to the conditions and report these. We have no specific hypotheses about these, but hope the results may produce findings worth further exploration.
+
+The data will be stored at OSF along with a code book. The final submitted version of the Stage 2 paper will be placed on github as a \textbf{knitr} \citep{knitr} document, combining the \LaTeX{} word processing and the \textsf{R} code to access the data, conduct the analysis, and make all the plots and tables. This is important to allow the reproducibility of the analyses \citep[see][for discussion]{Mair2016}. Upon acceptance of the Stage 1 of this manuscript the study will be pre-registered on OSF and submitted for IRB (ethics committee) exempt review. Funding for Prolific has been secured and the study should begin within a month or two of the acceptance of the Stage 1 manuscript. Data collection should take less than two weeks. The preparation of the Stage 2 manuscript should take less than a month from the end of data collection. 
+
+
+\bibliography{../AllRefs}
+\pagebreak
+\section{Appendix}
+
+\noindent Non-words sampled:
+%<<size="footnotesize",echo=FALSE>>=
+<<echo=FALSE>>=
+nonwords
+@
+
+\noindent Concrete nouns:
+
+%<<size="footnotesize",echo=FALSE>>=
+<<echo=FALSE>>=
+concrete
+@
+
+The following is not included in the published pre-registration. It is how the alternatives (the last 48 from nonwords) matched with the concrete words, whether the correct answer was first of last, and then the order of these (the same order was used for everyone to remove that source of variance). This was used to while making the Qualtrics survey.
+
+<<size="footnotesize">>=
+set.seed(978)
+fours <- sample(rep(1:4,12))
+rightfirst <- fours > 2
+otherright <- fours%%2 == 1
+table(rightfirst,otherright)
+testsB <- testsA <- cbind(1:48,concrete,nonwords[1:48],
+        nonwords[1:48],nonwords[49:96],otherright)
+
+testsB[rightfirst==0,] <- testsA[rightfirst==0,c(1,2,3,5,4,6)] 
+testsB[33:38,]
+tests <- testsB[sample(1:nrow(testsB)),]
+colnames(tests) <- c("num","word","rightNW","RA1","RA2","otherRight")
+#cbind(rightfirst,testsA,testsB)[32:39,]
+@
+\pagebreak
+<<size="small">>=
+tests
+@
+
+
+\pagebreak
+<<>>=
+tests
+@
+
+\end{document}

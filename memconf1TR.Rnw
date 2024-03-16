@@ -1,0 +1,719 @@
+\documentclass{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[natbibapa]{apacite}
+\usepackage{afterpage}
+%\usepackage{natbib}
+\bibliographystyle{apacite}
+\title{Analyses for Wright \& Celic}
+\author{\vspace{-1em}}
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+This is the technical report for Wright \& Celic (under review). The pre-registration is \citet{WrightCelic2024}, and the aim is to explore the differences in findings between \citet{SkagerbergWright2008power} and \citet{CarolEA2013}. The \texttt{rnw} of the submitted final submitted manuscript will also be placed in this folder. The data file is also on this page (though in the code here it is called from a folder on the hard drive so that would need to be changed for replicating). The second and third lines from the Qualtrics file were removed, as are the variables for IP address, their Prolific ID, and the location variables. The code checking for duplicate IP addresses is not run. If you wish access to the Qualtrics survey (i.e., the code, email us).
+
+\section{Loading some packages (not using all)}
+<<message=FALSE,warning=FALSE>>=
+library(lme4)
+library(lavaan)
+library(effectsize)
+library(lattice)
+library(EFA.dimensions)
+library(xtable)
+library(psych)
+library(plot.matrix)
+library(grDevices)
+library(car) 
+library(Hmisc)
+library(e1071)
+library(tm)
+library(textstem)
+library(SentimentAnalysis)
+library(sentimentr)
+@
+
+
+\section{Loading Data}
+Also creating the 
+<<>>=
+fnamea <- "C:\\Users\\wrighd12\\Documents\\Vuk\\memconfpow1aTR.csv"
+nn <- read.csv(fnamea)
+nn$ControlWrite[nn$ControlWrite == ""] <- NA
+nn$LMWrite[nn$LMWrite == ""] <- NA
+nn$LEWrite[nn$LEWrite == ""] <- NA
+nn$HMWrite[nn$HMWrite == ""] <- NA
+nn$HEWrite[nn$HEWrite == ""] <- NA
+nn$cond <- rep(NA,nrow(nn))
+nn$cond[!is.na(nn$ControlWrite)] <- "C"
+nn$cond[!is.na(nn$LEWrite)] <- "LE"
+nn$cond[!is.na(nn$LMWrite)] <- "LM"
+nn$cond[!is.na(nn$HEWrite)] <- "HE"
+nn$cond[!is.na(nn$HMWrite)] <- "HM"
+table(nn$cond,useNA="always")
+table(nn$studydescription) # all consent
+nn$cond <- as.factor(nn$cond)
+table(nn$Progress) # most of the non-100 were at the end, I
+         # pressed pause at some point thinking it
+         # would not affect those doing it, but it might have
+                   # and 
+nn <- nn[nn$Progress == 100,]
+#names(nn)  #too long to print
+dim(nn)
+@
+
+Checking time to see if payment to participants was about right. Note that on MTurk a lot of people do several tasks before going back to get paid; it may be similar on Prolific. Our payment was about as expected (slightly more on average).
+
+<<>>=
+quantile(nn$Duration..in.seconds.)/60
+@
+
+
+\section{More exclusions}
+\subsection{IP Address (not run)}
+<<IPAddress,eval=FALSE>>=
+dupIPs <- duplicated(nn$IPAddress)
+table(dupIPs,useNA="always")
+# no missing after the Progress < 100 removed
+dim(nn) # same
+@
+
+\subsection{For being too quick on the MDS}
+
+Memory Distrust Scale \citep{NashEA2023}.
+<<speedexclusions>>=
+#speed
+MDStimes <- with(nn,cbind(
+MDS01time_Last.Click,MDS02time_Last.Click,
+MDS03time_Last.Click,MDS04time_Last.Click,
+MDS05time_Last.Click,MDS06time_Last.Click,
+MDS07time_Last.Click,MDS08time_Last.Click,
+MDS09time_Last.Click,MDS10time_Last.Click,
+MDS11time_Last.Click,MDS12time_Last.Click,
+MDS13time_Last.Click,MDS14time_Last.Click,
+MDS15time_Last.Click,MDS16time_Last.Click,
+MDS17time_Last.Click,MDS18time_Last.Click,
+MDS19time_Last.Click,MDS20time_Last.Click))
+totMDStimes <- rowMeans(MDStimes)
+quantile(totMDStimes,probs=seq(0,1,.25))
+table(totMDStimes > 2,useNA="always")
+#11 removed
+nn <- nn[totMDStimes > 2,]
+dim(nn)
+table(nn$cond,useNA="always")
+@
+
+Qualtrics produces much information that we do not use. This includes multiple variables corresponding to the presentation of the items. We had these set so the other person's response was shown for four seconds and then the next refresh it moved on. This means that participants were likely ready to respond when prompted. All timing questions produce multiple measures. We focus on the last click measures (as above). For many the page automatically submits at the next refresh. The first click, particularly for the confidence scale, is just getting the curser to the right height. 
+
+\section{Demographics and a couple of more exclusions}
+<<demos>>=
+# Person variables
+demos <- data.frame(PID=nn$Prolific_PID,cond=nn$cond,
+  gender=nn$gender,ethnicity=nn$ethnicity,age=nn$age,
+  Fluent=nn$Fluent)
+table(demos$age,useNA="always")  
+table(demos$Fluent,useNA="always")
+@
+
+There was one who self-reported being under 18 and four saying not fluent. These also excluded. These were screening filters set up on Prolific.
+
+<<>>=
+dim(nn)
+nn <- nn[nn$age != "Under 18",]
+nn <- nn[nn$Fluent == "Yes, I am fluent.",]
+dim(nn)
+#remake demos
+demos <- data.frame(PID=nn$Prolific_PID,cond=nn$cond,
+  gender=nn$gender,ethnicity=nn$ethnicity,age=nn$age,
+  Fluent=nn$Fluent)
+table(demos$cond,useNA="always")
+table(demos$gender,useNA="always")
+table(demos$ethnicity,useNA="always")
+table(demos$age,useNA="always")  
+table(demos$Fluent,useNA="always")
+@
+
+
+\section{Adding in whether the other person was right and creating matrices}
+There are no missing on the key 48 trials as Qualtrics was set to require answers. As such we can create the long format in lots of ways, including just repeating things 48 times (instead of using one of the \texttt{reshape} functions). This makes adding things like whether the other person was right a little easier, but requires some care
+<<removejunk>>=
+person <- rep(1:nrow(nn),48)
+person[44:55]
+otherright <-
+  c(0,1,1,1,1,0,1,0,0,1,
+    0,0,1,0,0,0,1,1,0,1,
+    1,1,1,1,1,0,1,0,1,0,
+    1,0,0,0,0,1,0,1,0,0,
+    0,1,1,0,1,1,0,0)
+qnums <- 
+  c(14, 8,18,22,25,33,21, 1,38,39,
+    16,40,44,36,32,10,12, 4,42,35,
+    48, 3,27,20,17,23,15,11,28,30,
+     2,24,45, 5,26,31,46, 7,37, 6,
+    19,29,41,13,47,43, 9,34)
+qnumsch <- sub("0.","",sprintf("%2.2f",qnums/100))
+mc1wide <- nn  #more descriptive name
+mc1wide$right14 <- mc1wide$rec14 == "Psolged"
+mc1wide$right08 <- mc1wide$rec08 == "Grymmed"
+mc1wide$right18 <- mc1wide$rec18 == "Hunged"
+mc1wide$right22 <- mc1wide$rec22 == "Sourche"
+mc1wide$right25 <- mc1wide$rec25 == "Trewl"
+mc1wide$right33 <- mc1wide$rec33 == "Guarcs"
+mc1wide$right21 <- mc1wide$rec21 == "Smeighck"
+mc1wide$right01 <- mc1wide$rec01 == "Shrurched"
+mc1wide$right38 <- mc1wide$rec38 == "Snourged"
+mc1wide$right39 <- mc1wide$rec39 == "Thyf"
+mc1wide$right16 <- mc1wide$rec16 == "Ghweiled"
+mc1wide$right40 <- mc1wide$rec40 == "Cews"
+mc1wide$right44 <- mc1wide$rec44 == "Sprult"
+mc1wide$right36 <- mc1wide$rec36 == "Scrourth"
+mc1wide$right32 <- mc1wide$rec32 == "Strafth"
+mc1wide$right10 <- mc1wide$rec10 == "Froaced"
+mc1wide$right12 <- mc1wide$rec12 == "Blezz"
+mc1wide$right04 <- mc1wide$rec04 == "Whatts"
+mc1wide$right42 <- mc1wide$rec42 == "Shrypth"
+mc1wide$right35 <- mc1wide$rec35 == "Spleuks"
+mc1wide$right48 <- mc1wide$rec48 == "Treeld"
+mc1wide$right03 <- mc1wide$rec03 == "Splobed"
+mc1wide$right27 <- mc1wide$rec27 == "Phuke"
+mc1wide$right20 <- mc1wide$rec20 == "Groothe"
+mc1wide$right17 <- mc1wide$rec17 == "Snoarnths"
+mc1wide$right23 <- mc1wide$rec23 == "Thrighsts"
+mc1wide$right15 <- mc1wide$rec15 == "Greabed"
+mc1wide$right11 <- mc1wide$rec11 == "Splonc"
+mc1wide$right28 <- mc1wide$rec28 == "Starnd"
+mc1wide$right30 <- mc1wide$rec30 == "Spreenes"
+mc1wide$right02 <- mc1wide$rec02 == "Psoarm"
+mc1wide$right24 <- mc1wide$rec24 == "Proled"
+mc1wide$right45 <- mc1wide$rec45 == "Fowche"
+mc1wide$right05 <- mc1wide$rec05 == "Jyfed"
+mc1wide$right26 <- mc1wide$rec26 == "Jelmed"
+mc1wide$right31 <- mc1wide$rec31 == "Seuggs"
+mc1wide$right46 <- mc1wide$rec46 == "Kalls"
+mc1wide$right07 <- mc1wide$rec07 == "Yoise"
+mc1wide$right37 <- mc1wide$rec37 == "Krymmth"
+mc1wide$right06 <- mc1wide$rec06 == "Yolthed"
+mc1wide$right19 <- mc1wide$rec19 == "Cloughged"
+mc1wide$right29 <- mc1wide$rec29 == "Flulgn"
+mc1wide$right41 <- mc1wide$rec41 == "Tuiv"
+mc1wide$right13 <- mc1wide$rec13 == "Thrurphed"
+mc1wide$right47 <- mc1wide$rec47 == "Blirds"
+mc1wide$right43 <- mc1wide$rec43 == "Chylth"
+mc1wide$right09 <- mc1wide$rec09 == "Skorts"
+mc1wide$right34 <- mc1wide$rec34 == "Lawlds"
+
+recs <- with(mc1wide,cbind(
+    rec14,rec08,rec18,rec22,rec25,rec33,rec21,rec01,rec38,rec39,
+    rec16,rec40,rec44,rec36,rec32,rec10,rec12,rec04,rec42,rec35,
+    rec48,rec03,rec27,rec20,rec17,rec23,rec15,rec11,rec28,rec30,
+    rec02,rec24,rec45,rec05,rec26,rec31,rec46,rec07,rec37,rec06,
+    rec19,rec29,rec41,rec13,rec47,rec43,rec09,rec34))
+dim(recs)
+
+right <- with(mc1wide,cbind(
+    right14,right08,right18,right22,right25,
+    right33,right21,right01,right38,right39,
+    right16,right40,right44,right36,right32,
+    right10,right12,right04,right42,right35,
+    right48,right03,right27,right20,right17,
+    right23,right15,right11,right28,right30,
+    right02,right24,right45,right05,right26,
+    right31,right46,right07,right37,right06,
+    right19,right29,right41,right13,right47,
+    right43,right09,right34))
+sort(apply(right,2,sd))
+sort(apply(right,2,mean))
+# from around 50% to over 90%
+quantile(apply(right,1,mean),probs=seq(0,1,.1))
+# some at 100%, most above chance
+table(apply(right,1,mean)<.5)
+mean(right) 
+@
+
+<<confidtime>>=
+confid <- with(mc1wide,cbind(
+    confid14_1,confid08_1,confid18_1,confid22_1,confid25_1,
+    confid33_1,confid21_1,confid01_1,confid38_1,confid39_1,
+    confid16_1,confid40_1,confid44_1,confid36_1,confid32_1,
+    confid10_1,confid12_1,confid04_1,confid42_1,confid35_1,
+    confid48_1,confid03_1,confid27_1,confid20_1,confid17_1,
+    confid23_1,confid15_1,confid11_1,confid28_1,confid30_1,
+    confid02_1,confid24_1,confid45_1,confid05_1,confid26_1,
+    confid31_1,confid46_1,confid07_1,confid37_1,confid06_1,
+    confid19_1,confid29_1,confid41_1,confid13_1,confid47_1,
+    confid43_1,confid09_1,confid34_1))
+dim(mc1wide); dim(confid); length(c(confid))
+timelast <- with(mc1wide,cbind(
+    timer14b_Last.Click,timer08b_Last.Click,timer18b_Last.Click,
+    timer22b_Last.Click,timer25b_Last.Click,
+    timer33b_Last.Click,timer21b_Last.Click,timer01b_Last.Click,
+    timer38b_Last.Click,timer39b_Last.Click,
+    timer16b_Last.Click,timer40b_Last.Click,timer44b_Last.Click,
+    timer36b_Last.Click,timer32b_Last.Click,
+    timer10b_Last.Click,timer12b_Last.Click,timer04b_Last.Click,
+    timer42b_Last.Click,timer35b_Last.Click,
+    timer48b_Last.Click,timer03b_Last.Click,timer27b_Last.Click,
+    timer20b_Last.Click,timer17b_Last.Click,
+    timer23b_Last.Click,timer15b_Last.Click,timer11b_Last.Click,
+    timer28b_Last.Click,timer30b_Last.Click,
+    timer02b_Last.Click,timer24b_Last.Click,timer45b_Last.Click,
+    timer05b_Last.Click,timer26b_Last.Click,
+    timer31b_Last.Click,timer46b_Last.Click,timer07b_Last.Click,
+    timer37b_Last.Click,timer06b_Last.Click,
+    timer19b_Last.Click,timer29b_Last.Click,timer41b_Last.Click,
+    timer13b_Last.Click,timer47b_Last.Click,
+    timer43b_Last.Click,timer09b_Last.Click,timer34b_Last.Click))
+colnames(timelast) <- paste0("t",qnumsch)
+@
+
+The confidence measure was bi-modal, and it was decided not to transform the variable as we believe the underlying psychological construct likely is bi-modal. However, we had mentioned the following transformation so here is the result.
+<<>>=
+normrank <- function(x,delta)
+  qnorm((rank(x) - delta)/(length(x) - 2 * delta + 1))
+
+confidnr <- normrank(confid,delta=.7)
+par(mfrow=c(2,2))
+hist(confid);qqnorm(confid);qqline(confid)
+hist(confidnr);qqnorm(confidnr);qqline(confidnr)
+@
+
+\section{Looking at the time to answer the vocabulary questions}
+These are not really measuring time to answer BECAUSE the items were shown for four seconds prior just with the confederate's response, so the participant is ready to respond.
+
+<<timedist,message=FALSE>>=
+#time EDA
+par(mfrow=c(2,2))
+hist(c(timelast),freq=FALSE,
+  main=paste("skew =", sprintf("%.2f",skewness(c(timelast)))))
+tvals <- seq(min(c(timelast)),max(c(timelast)),length=1000)
+yvals <- dnorm(tvals,mean=mean(c(timelast)),sd=sd(c(timelast)))
+lines(tvals,yvals,col="red")
+qqnorm(c(timelast)); qqline(c(timelast))
+#likely with real data log will work better
+reexpress <- function(x) log(x)
+hist(reexpress(c(timelast)),freq=FALSE,
+  main=paste("skew =", sprintf("%.2f",
+                skewness(reexpress(c(timelast))))))
+tvals <- seq(min(reexpress(c(timelast))),
+             max(reexpress(c(timelast))),length=1000)
+yvals <- dnorm(tvals,mean=mean(reexpress(c(timelast))),
+               sd=sd(reexpress(c(timelast))))
+lines(tvals,yvals,col="red")
+qqnorm(reexpress(c(timelast))); qqline(reexpress(c(timelast)))
+@
+
+
+\section{Turning to long data}
+I am doing this just by piecing the data together rather than the \texttt{reshape} function (and related ones).
+<<WilsonApproach>>=
+long1 <- data.frame(
+    trial=1:(48*nrow(recs)),
+    person=rep(1:nrow(recs),48),condit=rep(mc1wide$cond,48),
+    wordno=rep(qnums,each=nrow(recs)),
+    partRight=as.numeric(c(right)),oright=rep(otherright,each=nrow(recs)),
+    conf=c(confid),rt1=c(timelast))     
+dim(long1)
+@
+
+
+<<check>>=
+long1[1:10,]
+cbind(1:10,1:10,mc1wide$cond[1:10],rep(qnums[1],10),
+      recs[1:10,1],right[1:10,1],otherright[1],confid[1:10,1],
+      timelast[1:10,1])
+@
+
+
+\section{Multilevel 1: The CIs for the conditions depending on whether the other person was right or wrong}
+For consistency using the bobyqa optimizer. 
+<<mult1,cache=TRUE>>=
+m1 <- glmer(partRight~oright*condit + (1|wordno) + (1|person),
+            family="binomial",data=long1, control=glmerControl(optimizer="bobyqa",
+                            optCtrl=list(maxfun=2e5)))
+summary(m1)
+mnoint <- glmer(partRight~ 0 + condit + oright:condit + 
+              (1|wordno) + (1|person),
+            family="binomial",data=long1)
+# warning
+mnoint <- update(mnoint, .~., control=glmerControl(optimizer="bobyqa",
+                            optCtrl=list(maxfun=2e5)))
+confint(mnoint,method="Wald") #profile") # slower
+@
+
+<<>>=
+summary(m1)$coef
+summary(m1)$coef[7:10,4]
+
+p.adjust(summary(m1)$coef[7:10,4])
+p.adjust(summary(m1)$coef[7:10,4],method="none")
+@
+
+
+\section{Creating conditional modes}
+
+<<condmodes,cache=TRUE>>=
+mcm <- glmer(partRight ~ oright + (1|wordno) + (oright|person),
+     family="binomial",data=long1)
+cms <- ranef(mcm)
+@
+
+<<>>=
+dotplot(cms) # not letting me just 
+#get the CMs for the random slopes
+@
+
+\section{Psychometrics for the MDS} 
+<<mdsexplore>>=
+# could have taken numeric values from Qualtrics
+mdsnum <- function(x) {
+  newvar <- rep(NA,length(x))
+  newvar[x == "Strongly disagree"] <- -3
+  newvar[x == "Slightly disagree"] <- -1
+  newvar[x == "Disagree"] <- -2
+  newvar[x == "Agree"] <- 2
+  newvar[x == "Neither agree nor disagree"] <- 0
+  newvar[x == "Slightly agree"] <- 1
+  newvar[x == "Strongly agree"] <- 3
+  return(as.numeric(newvar))}
+table(mc1wide$MDS01,mdsnum(mc1wide$MDS01),useNA="always")
+MDS <- cbind(mdsnum(mc1wide$MDS01),mdsnum(mc1wide$MDS02),
+             mdsnum(mc1wide$MDS03),mdsnum(mc1wide$MDS04),
+             mdsnum(mc1wide$MDS05),mdsnum(mc1wide$MDS06),
+             mdsnum(mc1wide$MDS07),mdsnum(mc1wide$MDS08),
+             mdsnum(mc1wide$MDS09),mdsnum(mc1wide$MDS10),
+             mdsnum(mc1wide$MDS11),mdsnum(mc1wide$MDS12),
+             mdsnum(mc1wide$MDS13),mdsnum(mc1wide$MDS14),
+             mdsnum(mc1wide$MDS15),mdsnum(mc1wide$MDS16),
+             mdsnum(mc1wide$MDS17),mdsnum(mc1wide$MDS18),
+             mdsnum(mc1wide$MDS19),mdsnum(mc1wide$MDS20))
+colnames(MDS) <- c(paste0("MDS0",1:9),paste0("MDS",10:20))
+@
+
+<<tab:corMDS,results='asis',size="footnotesize">>=
+tabcorMDS <- cor(MDS[,c(11,13,14,15,1:10,12,16:20)])
+colnames(tabcorMDS) <- rownames(tabcorMDS) <- 
+  paste0("i",c(11,13,14,15,1:10,12,16:20))
+tabcorMDS[upper.tri(tabcorMDS,diag=TRUE)] <- NA
+print(xtable(tabcorMDS[2:20,1:19]),size="tiny")
+@
+Used {\color{red}r}{\color{orange}a}{\color{yellow}i}{\color{green}n}{\color{cyan}b}{\color{blue}o}{\color{violet}w} colors from \textbf{grDevices} \citep{R}. The {\color{blue}blues} and {\color{purple}purples} have the largest differences. The results are in Figure~\ref{fig:corMDS}.
+
+<<corMDS,message=FALSE,fig.cap="Corrs.">>=
+par(mar=c(4,4,4,7))
+plot(tabcorMDS[2:20,1:19],col=rainbow(6),border="grey",ylab="",xlab="",
+     main="Correlations MDS",axis.col=NULL, axis.row=NULL,font.main=1)
+axis(1,c(2.5,12),c("Other","Self"))
+axis(2,c(8.5,18),c("Self","Other"))
+rect(0.5,0.5,4.5,16.5,lwd=2)
+@
+
+One, two, or three dimensions? 
+<<>>=
+DIMTESTS(MDS,display=1)
+fa.parallel(MDS,fa='pc')
+@
+<<>>=
+mds1 <- '
+  md   =~ MDS11 + MDS13 + MDS14 + MDS15 +
+          MDS01 + MDS02 + MDS03 + MDS04 + MDS05 + MDS06 + 
+          MDS07 + MDS08 + MDS09 + MDS10 + MDS12 + MDS16 + 
+          MDS17 + MDS18 + MDS19 + MDS20' 
+mds2 <- '
+  other =~ MDS11 + MDS13 + MDS14 + MDS15
+  self =~ MDS01 + MDS02 + MDS03 + MDS04 + MDS05 + MDS06 + 
+          MDS07 + MDS08 + MDS09 + MDS10 + MDS12 + MDS16 + 
+          MDS17 + MDS18 + MDS19 + MDS20' 
+cfa1 <- cfa(mds1,data=MDS)
+cfa2 <- cfa(mds2,data=MDS)
+anova(cfa1,cfa2)
+summary(cfa2,fit.measures=TRUE)
+@
+
+This two factor model fits better than the one factor one, and is well-suited for our analyses. However, the RMSEA is about 1, so there is room for improvement, and we will be discussing this with Nash.
+
+<<>>=
+mdsfac <- cbind(predict(cfa2),predict(cfa1))
+selfratings <- cbind(mc1wide$SubjPerformance_1, mc1wide$SubjPerformance_2,mc1wide$Influence_1)
+@
+
+\section{Looking at correlations at the person level}
+
+<<>>=
+pairs(selfratings)
+pairs(mdsfac)
+dim(mdsfac);dim(selfratings);dim(cms$person)
+# now 8, but ...
+vars7 <- cbind(mdsfac,selfratings,cms$person)
+ctab <- matrix(rep("a",64),nrow=8,ncol=8) # so strings
+apac <- function(x) sub("0.",".",sprintf("%0.3f",x),fixed=TRUE)
+for (i in 1:8)
+  for (j in 1:8){
+    if (i == j) ctab[i,i] <- sprintf("%0.3f",sd(vars7[,i]))
+    if (i > j) ctab[i,j] <- apac(cor(vars7[,c(i,j)])[1,2])
+    if (j > i) {
+        cis <- cor.test(vars7[,i],vars7[,j])$conf.int
+        ciss <- paste0("(",apac(cis[1]),", ",apac(cis[2]),")")
+        ctab[i,j] <- ciss}}
+rownames(ctab) <-c("MDSOther","MDSSelf","MDS1dim","MeRight",
+  "OtherRight","Influence","Accuracy","MemConf")  
+colnames(ctab) <-   c("MDSO","MDSS","MDS1","Me","Other","Infl","Acc","MC")  
+@
+
+The MDS scores correlate less than $|r| = .1$ with other measures.
+
+<<ctab,results='asis',fig.cap="Correlations on the lower triangle, 95\\% CIs on the upper triangle, and standard deviations on the diagonal.">>=
+print(xtable(ctab),size="footnotesize")
+@
+
+\section{Comparing the conditional modes (and other things) with condition}
+
+<<>>=
+newvars <- vars7
+newvars$cond <- mc1wide$cond
+newvars$exp <- newvars$cond != "C"
+newvars$low <- newvars$cond == "LM" | newvars$cond =="LE"
+newvars$manage <- newvars$cond == "LM" | newvars$cond =="HM"
+#checked
+@
+
+These ANOVAs will be done in a loop for all seven of the variables. Three models will be run for each. First the model with no intercept will be run to get the confidence intervals for the individual conditions. Then the ANOVA comparing each to the control, and finally the $2 \times 2$ ANOVA without the control group. \textbf{car} \citep{car2} is loaded for Type II sum of squares, as discussed in their book. The key one is the one for memory conformity.
+
+<<fig.width=4.4*1.2,out.width="4.4in",fig.height=3.3*1.2,out.height="3.3in",fig.pos="!ht",fig.align="center">>=
+cis <- {}
+# eventually saving the anova stuff too for printing
+for (i in 1:7){
+  print(rownames(ctab)[i])
+  cisi <- confint(lm(newvars[,i] ~ 0 + newvars$cond))
+  cis <- rbind(cis,cisi)
+  plot(1:5,mv <- tapply(newvars[,i],newvars$cond,mean),las=1,
+       main=rownames(ctab)[i],xaxt='n',ylim=range(cisi),
+       ylab="mean and 95% CIs")
+  axis(1,1:5,levels(newvars$cond))
+  errbar(1:5,mv,cisi[,1],cisi[,2],add=TRUE)
+  m2 <- lm(newvars[,i] ~ newvars$cond) #control is baseline
+  summary(m2)
+  m3 <- lm(newvars[newvars$cond != "C",i] ~ 
+    newvars$low[newvars$cond != "C"]*newvars$manage[newvars$cond != "C"])
+  a3 <- Anova(m3,type="II")
+  #mod <- aov(overc~as.factor(group))
+  print(eta_squared(a3, ci=.95))
+  print(omega_squared(a3, ci=.95))
+
+  rownames(a3) <- c("low","manage","interaction","residuals")
+  print(a3)
+}
+#cis  add cohen's d to the confint
+@
+
+
+So this is a good fairly clear finding. Low power people are more influenced by the other person whether it is evaluative or managerial power.
+
+\section{Are response times longer with the other making an error?}
+\dots{} and other things with response times.
+
+{\color{red}As noted above, they already will have been looking at this for 4s, so this is NOT a good measure.}
+
+The response times matrix as \texttt{timelast}. Here I will make them long and add them to the long data object. Some are very slow, suggesting the doorbell rung, or something like that. However, the longest was only \Sexpr{round(max(timelast),2)} seconds, so just over two minutes, which is not huge.
+
+<<>>=
+dim(long1)
+long1$rt <- c(timelast)
+dim(long1)
+skewness(long1$rt)
+skewness(log(long1$rt))
+geomean <- function(x) exp(mean(log(x)))
+tapply(long1$rt,long1$condit,geomean)
+tapply(long1$rt,long1$condit,mean)
+tapply(long1$rt,long1$partRight,geomean)
+tapply(long1$rt,long1$oright,geomean)
+tapply(long1$rt,
+  list(long1$oright,long1$partRight),geomean)
+@
+
+The differences by condition are person variables, so best to examine these in models.
+
+By condition, here just all 5. It is non-significant, as I imagined it would be.
+
+<<>>=
+m0 <- lmer(log(rt)~1 + (1|wordno) + (1|person),data=long1,REML=FALSE)
+m1 <- update(m0, .~. + condit)
+anova(m0,m1)
+@
+
+The question is whether confronted with errant information whether people are slower.
+
+<<rtswithother,cache=TRUE>>=
+dim(long1)
+m0 <- lmer(log(rt)~1 + (1|wordno) + (1|person),data=long1,REML=FALSE)
+m1 <- update(m0, .~. + oright)
+m2 <- update(m0, .~. + partRight)
+m3 <- update(m2, .~. + oright)
+m4 <- update(m3, .~. + oright:partRight)
+rightsn <- long1$oright + 2*long1$partRight
+rights <- vector(length=length(rightsn))
+rights[rightsn == 0] <- "OwSw"
+rights[rightsn == 1] <- "OrSw"
+rights[rightsn == 2] <- "OwSr"
+rights[rightsn == 3] <- "OrSr"
+dim(long1)
+long1$rights <- rights
+dim(long1)
+table(long1$rights,long1$oright,useNA="always")
+table(long1$rights,long1$partRight,useNA="always")
+table(long1$rights,long1$condit,useNA="always")
+@
+
+\section{Now confidence}
+Confidence can be dealt with a few way, largely in how being right is used with it. This has a bimodal distribution. I am going to keep it like that.
+
+<<>>=
+dim(long1);length(c(confid))
+long1$conf <- c(confid)
+
+m0conf <- lmer(conf ~ 1 + (1|wordno) + (1|person),data=long1,REML=FALSE)
+m1conf <- update(m0conf, .~. + partRight)
+m2conf <- update(m0conf, .~. + oright)
+m3conf <- update(m2conf, .~. + partRight)
+m4conf <- update(m3conf, .~. + partRight:oright)
+
+m0conf <- lmer(normrank(conf,delta=.7) ~ 1 + (1|wordno) + (1|person),data=long1,REML=FALSE)
+m1conf <- update(m0conf, .~. + partRight)
+m2conf <- update(m0conf, .~. + oright)
+m3conf <- update(m2conf, .~. + partRight)
+m4conf <- update(m3conf, .~. + partRight:oright)
+
+with(long1,tapply(conf,list(partRight,oright),mean))
+with(long1,tapply(normrank(conf,delta=.7),list(partRight,oright),mean))
+@
+
+<<>>=
+anova(m0conf,m1conf,m2conf,m3conf,m4conf)
+summary(m4conf)
+@
+
+
+\section{The Text Analysis}
+The first task is checking for gibberish. I think that is a human task. They all look like words. I am not printing these out here, but do look at them. Technically, this could go at the start with the other exclusions, but since there were none for this I have kept this here.
+
+<<eval=FALSE>>=
+mc1wide$ControlWrite[!is.na(mc1wide$ControlWrite)]
+mc1wide$LEWrite[!is.na(mc1wide$LEWrite)]
+mc1wide$LMWrite[!is.na(mc1wide$LMWrite)]
+mc1wide$HEWrite[!is.na(mc1wide$HEWrite)]
+mc1wide$HMWrite[!is.na(mc1wide$HMWrite)]
+@
+
+Creating a single text variable.
+
+<<>>=
+mc1wide$textans <- mc1wide$ControlWrite
+mc1wide$textans[!is.na(mc1wide$LEWrite)] <- mc1wide$LEWrite[!is.na(mc1wide$LEWrite)]
+mc1wide$textans[!is.na(mc1wide$LMWrite)] <- mc1wide$LMWrite[!is.na(mc1wide$LMWrite)]
+mc1wide$textans[!is.na(mc1wide$HEWrite)] <- mc1wide$HEWrite[!is.na(mc1wide$HEWrite)]
+mc1wide$textans[!is.na(mc1wide$HMWrite)] <- mc1wide$HMWrite[!is.na(mc1wide$HMWrite)]
+sum(is.na(mc1wide$textans))
+@
+
+Doing the fairly standard things of removing stuff.
+<<>>=
+tt <- mc1wide$textans
+tt <- removePunctuation(tt)
+tt <- removeNumbers(tt)
+tt <- removeWords(tt,stopwords("english"))
+tt <- lemmatize_strings(tt)
+@
+
+
+There are lots of functions in lots of packages for sentiment analysis. \textbf{sentimentr} \citep{sentimentr}, \textbf{SentimentAnalysis} \citep{SentimentAnalysis}, \textbf{tidytext} \citep{tidytext}, \textbf{syuzhet} \citep{syuzhet}, \emph{etc}. The goal here is to get a single measure for people's views about the task. The \texttt{analyzeSentiment} from \textbf{SentimentAnalysis} does this with multiple sentiment files. It uses four dictionaries, and these are compared, and their average taken for each individual. 
+
+
+<<>>=
+sent <- analyzeSentiment(tt)
+pairs(sent[,c(2,5,8,12)])
+cor(cbind(sent[,c(2,5,8,12)],rowMeans(sent[,c(2,5,8,12)])))
+names(sent)[c(2,5,8,12)]
+eigen(cor(sent[,c(2,5,8,12)]))$values
+factanal(sent[,c(2,5,8,12)],1)
+@
+
+These differ (on the oneway ANOVA) by condition, with the evaluation conditions having the highest sentiment, and the control being the lowest.
+<<>>=
+sentvals <- rowMeans(sent[,c(2,5,8,12)])
+tapply(sentvals,mc1wide$cond,mean)
+oneway.test(sentvals~mc1wide$cond)
+pairwise.t.test(sentvals,mc1wide$cond)
+
+pairwise.t.test(sentvals,mc1wide$cond,method="none")
+@
+
+If you treat the two effects together that would be less than $p < .05$, but these are exploratory anyway, so \dots{}.
+<<>>=
+long1$senti <- rep(sentvals,48)
+vars7$sentvals <- sentvals
+cor(vars7)
+m0 <- glmer(partRight ~ 1 + (1|wordno) + (1|person),family=binomial,data=long1)
+m1 <- update(m0, .~. + oright)
+m2 <- update(m1, .~. + senti)
+m3 <- update(m2, .~. + senti:oright)
+anova(m0,m1,m2,m3)
+summary(m2)
+summary(m3)
+with(long1,tapply(senti,list(partRight,oright),mean))
+@
+
+
+<<echo=FALSE,eval=FALSE>>=
+cor.test(cms$person[,1],cms$person[,2])
+# but restricted because of the data
+diffO <- tapply(long1$partRight[long1$oright==1],long1$person[long1$oright==1],mean) -
+  tapply(long1$partRight[long1$oright==-1],long1$person[long1$oright==-1],mean)
+sumO <-  tapply(long1$partRight[long1$oright==1],long1$person[long1$oright==1],mean) +
+  tapply(long1$partRight[long1$oright==-1],long1$person[long1$oright==-1],mean)
+cor(cbind(cms$person[,1],cms$person[,2],diffO,sumO))
+plot(cms$person)
+@
+First we examine which variables relate with the size of the memory conformity effect (the final line and final row of the table). It is uncorrelated (all $|r| < .03$) with the factors from the MDS. It also has a low correlation with estimates of how many items the participant thought that they answered correctly. The correlation between this and how many the participant thought the other person accurately answered was $r = .196$. The correlation between how muc
+<<echo=FALSE>>=
+newvars <- as.data.frame(vars7)
+newvars$cond <- mc1wide$cond
+newvars$exp <- newvars$cond != "C"
+newvars$low <- newvars$cond == "LM" | newvars$cond =="LE"
+newvars$manage <- newvars$cond == "LM" | newvars$cond =="HM"
+#checked
+@
+
+These ANOVAs will be done in a loop for all seven of the variables. Three models will be run for each. First the model with no intercept will be run to get the confidence intervals for the individual conditions. Then the ANOVA comparing each to the control, and finally the $2 \times 2$ ANOVA without the control group. \textbf{car} \citep{car2} is loaded for Type II sum of squares, as discussed in their book. The key one is the one for memory conformity.
+
+<<fig.width=4.4*1.2,out.width="4.4in",fig.height=3.3*1.2,out.height="3.3in",fig.pos="!ht",fig.align="center",echo=FALSE,size="footnotesize",eval=FALSE>>=
+cis <- {}
+# eventually saving the anova stuff too for printing
+for (i in 7:8){
+  print(rownames(ctab)[i])
+  cisi <- confint(lm(newvars[,i] ~ 0 + newvars$cond))
+  cis <- rbind(cis,cisi)
+  plot(1:5,mv <- tapply(newvars[,i],newvars$cond,mean),las=1,
+       main=rownames(ctab)[i],xaxt='n',ylim=range(cisi),
+       ylab="mean and 95% CIs")
+  axis(1,1:5,levels(newvars$cond))
+  errbar(1:5,mv,cisi[,1],cisi[,2],add=TRUE)
+  m2 <- lm(newvars[,i] ~ newvars$cond) #control is baseline
+  summary(m2)
+  m3 <- lm(newvars[newvars$cond != "C",i] ~ 
+    newvars$low[newvars$cond != "C"]*newvars$manage[newvars$cond != "C"])
+  a3 <- Anova(m3,type="II")
+  #mod <- aov(overc~as.factor(group))
+  #print(eta_squared(a3, ci=.95))
+  print(omega_squared(a3, ci=.95,verbose=FALSE),digits=5)
+print(pairwise.t.test(newvars[,i],newvars$cond,p.adjust.method="none"))
+  ps <- pairwise.t.test(newvars[,i],newvars$cond,p.adjust.method="none")$p.value[,1]
+  print(rbind(ps,p.adjust(ps,method="holm")))
+    rownames(a3) <- c("low","manage","interaction","residuals")
+  print(a3)
+}
+@
+h they thought they were influenced is $r = .392$. These correlations do not show the causal patterns among these. 
+
+The conditional modes for memory accuracy show a similar pattern. The negative correlations between it and MDS factors were between -.109 and -.086. It was correlated with people's estimates for how many they got right ($r = .461$), which shows some metacognitive accuracy. It showed a negative correlation with how much people felt they were influenced.
+
+\bibliography{../AllRefs}
+
+\end{document}
